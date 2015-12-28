@@ -1,0 +1,12 @@
+hbase 版本为1.1.2
+
+该版本对应的hadoop版本为2.5.1,可以从 lib/hadoop-client-2.x.x.jar 查看。
+
+首先安装好hadoop，启动hadoop。
+
+1. 修改 hbase-env.sh 设置JDK和使用hbase管理zookeeper。
+2. 修改 hbase-site.sh 设置hdfs 地址以及hbase临时目录,zookeeper 地址及存放路径。
+3. 修改 regionservers 设置region server 地址，每行一个region server 地址(主机名或者ip)。
+
+4. 可以使用
+

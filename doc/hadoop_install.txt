@@ -1,0 +1,100 @@
+Hadoop 版本为2.7.1
+
+0. 首先要安装ssh免密码链接，rsa方式，将集群中的所有公共key放在一个文件中，分发的集群中所有的 .ssh 对应的目录。
+
+
+1. hadoop 伪分布式安装，需要修改四个文件
+   hadoop-env.sh 设置jdk环境
+   core-site.xml 设置dfs临时目录，默认存放在/tmp 下，该文件linux重启会删除所以不要放在默认目录下。
+   hdfs-site.xml 设置dfs保存路径。 dfs.replication 设计副本数量
+   mapred-site.xml 设置job tracker 端口， reduce 任务配置
+
+2. 格式化文件系统
+   hadoop namenode -format
+
+   注意，格式化完成后不要反复格式化，因为会丢失数据。有时还会出现其他错误。如果要重新格式化请先删除hdfs存放目录。
+
+=================
+== HDFS CORE ====
+=================
+3. HDFS API
+
+   如果创建目录 fileSystem.mkdirs(new Path(DIR_PATH));
+   Permission denied，
+   可以在hdfs-site.xml中添加dfs.permissions=false
+   或者修改hadoop根目录权限 hadoop fs -chmod 777 /
+
+4. 主要是一些main方法，测试hadoop一些基础方法。
+    为分布式部署配置文件在 hadoopconf 下，主要修改一下默认目录。
+
+5. 可以使用 hosts:50070 查看namenode节点
+   http://rsong:50070/dfshealth.html
+
+   通过host:8088 查看集群状态
+   http://rsong:8088 用yarn查看集群状态
+
+6. 验证hadoop 安装成功的方法
+   hdfs dfs -mkdir /user
+   hdfs dfs -mkdir /user/rsong
+   hadoop fs -put ~/samp.txt input  --放一个本地目录到hdfs上（见resources目录）
+
+   执行官方例子 wordcount mapreduce.
+   hadoop jar share/hadoop/mapreduce/hadoop-mapreduce-examples-2.7.1.jar wordcount input/samp.txt output1
+   执行完成后可以查看
+   hadoop jar share/hado
+   hadoop fs -cat output1/*
+
+
+7. NameNode
+    单节点
+    管理文件系统的命名空间
+    记录每个文件数据块在哪个DataNode上的位置和副本信息
+    记录命名空间的改动或者空间本身的属性的改动
+    NameNode使用事务日志记录HDFS元数据的变化，使用映像文件存储文件系统的命名空间，包括文件映射，文件属性
+8. DataNode
+   负责物理节点的存储管理，一次写入，多次读取
+   文件由数据块组成，默认64MB
+   数据尽量分布在各个节点
+
+9. HDFS
+      冗余副本策略
+      机架策略
+      心跳机制
+      安全模式
+      校验和
+      回收站
+      元数据保护
+      快照机制
+
+10. 在原有节点上新增节点
+    复制配置
+    修改master，slavess文件增加该节点信息
+    ssh 免密码
+    启动该节点 datanode，tasktracker
+    start-balancer.sh 进行数据负载均衡
+
+11. dfs java api 方式  FileSystemTest.java
+
+=================
+== Map-Reducer
+=================
+12. Map
+    Map-reduce 思想“分而治之”
+    Mapper 负责分，把复杂业务分成若干个简单任务。
+
+13. Reducer
+     对map阶段的结果进行汇总
+
+**
+** 在window中执行mapreduce程序，需要将hadoop源码中的（以2.7.1为例）
+   hadoop-2.7.1-src\hadoop-2.7.1-src\hadoop-common-project\hadoop-common\src\main\winutils
+   vs.net工程，编译这个工程可以得到这一堆文件，hadoop.dll、winutils.exe
+   将winutils.exe复制到$HADOOP_HOME\bin目录，将hadoop.dll复制到%windir%\system32目录
+
+   我在window环境运行mapreduce程序，提交到远程haddop jobtracker中执行。
+   注：如果不想编译，可以查看 conf目录下的 hadoopbin-2.7.1_64.zip
+
+   TestHadoopMapRed.java 中是简单mapper-reducer程序，需要提前将samp.txt 文件上传到hdfs文件系统中。
+   输入参数为 hdfs://rsong:9000/user/rsong/samp.txt  hdfs://rsong:9000/user/rsong/output
+   文件系统中output目录需要不存在
+
