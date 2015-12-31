@@ -11,6 +11,9 @@ import org.apache.hadoop.hbase.util.Bytes;
 import java.io.IOException;
 
 
+/**
+ * 需要添加core-site.xml
+ */
 public class HBaseTestCase {
     //声明静态配置 HBaseConfiguration
     static Configuration cfg = HBaseConfiguration.create();
@@ -75,7 +78,7 @@ public class HBaseTestCase {
     }
 
     public static void main(String[] agrs) {
-        String tablename = "hbase_test3";
+        String tablename = "hbase_test";
         String columnFamily = "cf";
 
         try {

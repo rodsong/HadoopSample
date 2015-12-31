@@ -39,7 +39,7 @@ public class CallRelationMapReduce {
         public void map(LongWritable key, Text value, Context context) throws IOException {
             String line = value.toString();
 
-            LOG.info("Mapper line:" + line);
+            LOG.info("Mapper key:" + key.toString());
             try {
                 String[] lineSplit = line.split(" ");
                 String anum = lineSplit[0];

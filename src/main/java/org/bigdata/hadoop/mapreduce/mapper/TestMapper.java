@@ -49,11 +49,8 @@ public class TestMapper extends MapReduceBase implements Mapper<LongWritable, Te
              } else {
                airTemperature = Integer.parseInt(line.substring(87, 92));
              }
-             //LOG.info("loki:"+airTemperature);
              String quality = line.substring(92, 93);
-             //LOG.info("loki2:"+quality);
              if (airTemperature != MISSING && quality.matches("[012459]")) {
-               LOG.info("loki3:"+quality);
                output.collect(new Text(year), new IntWritable(airTemperature));
              }
            }

@@ -1,0 +1,43 @@
+hadoop map reduce 生命周期
+
+假设用户编写一个MapReduce程序，那么该程序的执行过程如下，
+
+1. 提交作业及初始化，Jobclient把程序jar，配置文件等上传到HDFS系统。
+   并通知jobtracker，jobstracker 创建JobInProgress 对象跟踪作业运行状况。
+   JobInProgress创建 TaskInprogress对象用以跟踪每个任务的运行状态。
+2. 任务调度及监控
+   JobTracker 跟踪作业整个运行过程，TaskTracker负责执行任务。
+
+3. TaskTracker为每个task准备执行环境，包括JVM,资源隔离。
+
+4. TaskTracker准备好Task环境后就会启动task，task汇报运行的状态给TaskTracker，TaskTracker汇总后
+   汇报给JobTracker
+
+5. 作业完成。
+
+
+Map task 流程，
+ a. read 从输入InputSplit 中解析的一个个key/value
+ b. 调用map()函数，产生新的key/value
+ c. Collect阶段，新key/value输出到环形缓冲区内，
+ d. spill 阶段，环形缓冲区中满后会排序，合并，压缩写文件（并不是真正的满而可能是达到xx%就会开始排序合并）
+ e. Combine 阶段，当map数据处理完后对所有临时文件进行一次合并。
+
+Reduce task 流程，
+ a. Shuffle 阶段，也称Copy阶段，把各map的数据远程copy,如果超过阈值就写文件否则就存放到内存中
+ b. Merge 阶段，
+ c. Sort阶段，map已经对数据进行局部排序，reduce 需要对key进行聚集，所以需要一次全部数据排序。
+ d. Reduce阶段，将每组数据交给用户编写的reduce()函数处理
+ e. Write阶段，将结果写到HDFS上
+
+
+参数优化及系统优化
+io.sort.mb  Map Task 缓冲区大小，默认100mb
+io.sort.record.percent  缓冲区kvoffset和kvideices 占用io.sort.mb比例默认0.05
+
+
+mapred.map.output.compression.codec 配置压缩器
+
+tasktracker.http.threads  http server 处理map task输出线程
+
+

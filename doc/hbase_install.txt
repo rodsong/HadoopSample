@@ -4,9 +4,100 @@ hbase 版本为1.1.2
 
 首先安装好hadoop，启动hadoop。
 
+
 1. 修改 hbase-env.sh 设置JDK和使用hbase管理zookeeper。
 2. 修改 hbase-site.sh 设置hdfs 地址以及hbase临时目录,zookeeper 地址及存放路径。
 3. 修改 regionservers 设置region server 地址，每行一个region server 地址(主机名或者ip)。
 
-4. 可以使用
+4. start-hbase.sh 启动hbase
+
+
+Habse 集群安装方法。
+已三台机器为例，node-a.example.com ，master (zookeeper)
+             node-b.example.com,  backup  (zookeeper,regionserver)
+              node-b.example.com,  (zookeeper,regionserver)
+
+1. 配置集群中的节点SSH 登录，
+   $ ssh-keygen -t rsa
+   $ cat id_rsa.pub >> ~/.ssh/authorized_keys
+   $ ssh
+
+   将所有节点的authorized_key汇集到一起，分发的所有机器上，这样集群中的所有节点就能ssh访问了。
+
+2. a. 准备节点 node-a，该节点是主节点，不启动region server
+   编辑 conf/regionservers 去掉localhost. 添加两行 node-b and node-c （hostnames or IP）。
+
+   备注，即使你想在master上也跑一个数据节点，在这个配置中也不能写localhost，要修改成ip或者hostname，方便其他节点识别。
+
+   b. 配置节点node-b为node-a的backup节点
+   在conf/ 下新建 backup-masters 文件,添加一行，node-b的 hostname node-b.example.com
+
+   c. 配置zookeeper
+      在node-a上编辑 conf/hbase-site.xml 添加如下内容：
+       <property>
+         <name>hbase.zookeeper.quorum</name>
+         <value>node-a.example.com,node-b.example.com,node-c.example.com</value>
+       </property>
+       <property>
+         <name>hbase.zookeeper.property.dataDir</name>
+         <value>/usr/local/zookeeper</value>
+       </property>
+
+       指定Hbase启动时管理zoopkeeper 集群实例。
+
+3. 准备节点node-b和node-c
+    node-b 作为master的备份节点运行master备份和zookeeper.
+    集群的每个节点需要有相同的配置信息。conf /目录的内容复制到节点b和node-c conf /目录。
+
+4. 启动集群
+   启动之前确保所有几点上没有启动hbase进程，例如HMaster, HRegionServer, HQuorumPeer. 如果存在就kill掉
+   在node-a上启动start-hbase.sh
+
+   $ bin/start-hbase.sh
+   node-c.example.com: starting zookeeper, logging to /home/hbuser/hbase-0.98.3-hadoop2/bin/../logs/hbase-hbuser-zookeeper-node-c.example.com.out
+   node-a.example.com: starting zookeeper, logging to /home/hbuser/hbase-0.98.3-hadoop2/bin/../logs/hbase-hbuser-zookeeper-node-a.example.com.out
+   node-b.example.com: starting zookeeper, logging to /home/hbuser/hbase-0.98.3-hadoop2/bin/../logs/hbase-hbuser-zookeeper-node-b.example.com.out
+   starting master, logging to /home/hbuser/hbase-0.98.3-hadoop2/bin/../logs/hbase-hbuser-master-node-a.example.com.out
+   node-c.example.com: starting regionserver, logging to /home/hbuser/hbase-0.98.3-hadoop2/bin/../logs/hbase-hbuser-regionserver-node-c.example.com.out
+   node-b.example.com: starting regionserver, logging to /home/hbuser/hbase-0.98.3-hadoop2/bin/../logs/hbase-hbuser-regionserver-node-b.example.com.out
+   node-b.example.com: starting master, logging to /home/hbuser/hbase-0.98.3-hadoop2/bin/../logs/hbase-hbuser-master-nodeb.example.com.out
+
+   集群中的所有节点会先启动zk，在启动master节点，再启动region server 和备份节点。
+
+5. 查看进程
+   node-a jps Output
+       $ jps
+       20355 Jps
+       20071 HQuorumPeer
+       20137 HMaster
+
+   node-b jps Output
+       $ jps
+       15930 HRegionServer
+       16194 Jps
+       15838 HQuorumPeer
+       16010 HMaster
+
+   node-c jps Output
+        $ jps
+        13901 Jps
+        13639 HQuorumPeer
+        13737 HRegionServer
+
+    HQuorumPeer 进程是代表hbase启动的zk. 如果用这种方式每各集群的节点都会启动一个zk实例，所以这个用在测试用例中应用，
+    如果在生产环境推荐用外部自己部署zk集群， 如果是外部集群这个进程名称是QuorumPeer.
+
+6. web 查看
+   如果你安装的hbase版本高于0.98.x，
+   HTTP 端口从 master 60010改为 16010 ,RegionServer 端口从 60030 修改为 16030.
+
+    http://node-a.example.com:16010/ 或者  secondary master http://node-b.example.com:16010/  查看到master server信息
+    http://node-c.example.com:16030/  查看region server 信息
+
+7. 可以把master和region server 的进程关掉查看 hbase 集群的工作情况。
+
+
+
+
+
 
