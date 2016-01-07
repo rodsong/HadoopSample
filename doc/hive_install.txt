@@ -1,0 +1,159 @@
+
+1. down load hive from  http://hive.apache.org/
+
+
+2. CLI (command line interface)
+
+3. Hive DDL (Hive Data Definition Language)
+    hive
+
+    hive> create table pokes (foo int, bar string);
+    hive> show tables '.*s';
+    hive> alter table pokes add columns (new_col int COMMENT 'a comment');
+    hive> describe pokes;
+    hive> alter table pokes replace columns (foo int, bar string,foo_new int comment 'comment replaces');
+    hive> drop table pokes;
+
+4. DML operations
+    hive> create table pokes (
+        > foo int,
+        > bar string
+        > );
+    hive> load data local inpath './examples/files/kv1.txt' overwrite into table pokes;
+
+    hive> CREATE TABLE invites (foo INT, bar STRING) PARTITIONED BY (ds STRING);
+
+5. SQL
+
+   hive> SELECT a.foo FROM invites a WHERE a.ds='2008-08-15';
+   hive> INSERT OVERWRITE DIRECTORY '/tmp/hdfs_out' SELECT a.* FROM invites a WHERE a.ds='2008-08-15';
+
+   rsong@rsong:~/hive-1.2.1$ hdfs dfs -cat /tmp/hdfs_out/*
+
+   hive> SELECT a.foo FROM invites a WHERE a.ds='2008-08-15';
+   hive> dfs -ls;
+
+
+   例如：
+    create table u_data(
+        userid int,
+        movieid int,
+        rating int,
+        unixtime string)
+        ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
+        STORED AS TEXTFILE;
+
+    Hive本身没有专门的数据存储格式，也不能为数据建立索引，所以用户可以自由组织表，只需要在创建的时候指定列分割符和行分割符。
+
+    wget http://files.grouplens.org/datasets/movielens/ml-100k.zip
+    cd /home/rsong/Downloads/ml-100k
+    hive
+    > LOAD DATA LOCAL INPATH '/home/rsong/Downloads/ml-100k/u.data' OVERWRITE INTO TABLE u_data;
+
+
+
+    CREATE TABLE u_data_new (
+      userid INT,
+      movieid INT,
+      rating INT,
+      weekday INT)
+    ROW FORMAT DELIMITED  FIELDS TERMINATED BY '\t';   //数据分割符
+
+    create python file ,weekday_mapper.py:
+    -------------------------------------------
+     import sys
+     import datetime
+
+     for line in sys.stdin:
+       line = line.strip()
+       userid, movieid, rating, unixtime = line.split('\t')
+       weekday = datetime.datetime.fromtimestamp(float(unixtime)).isoweekday()
+       print '\t'.join([userid, movieid, rating, str(weekday)])
+     -------------------------------------------
+
+   add FILE weekday_mapper.py;
+
+   INSERT OVERWRITE TABLE u_data_new
+   SELECT
+     TRANSFORM (userid, movieid, rating, unixtime)
+     USING 'python weekday_mapper.py'
+     AS (userid, movieid, rating, weekday)
+   FROM u_data;
+
+   SELECT weekday, COUNT(*)  FROM u_data_new GROUP BY weekday;
+
+
+    a.创建表
+    CREATE TABLE page_view(
+            viewTime INT,
+            userid BIGINT,
+            page_url STRING,
+            referrer_url STRING,
+            ip STRING COMMENT 'IP Address of the User'
+            )
+    COMMENT 'This is the page view table 测试中文'
+    PARTITIONED BY(dt STRING, country STRING)
+    STORED AS SEQUENCEFILE;
+
+
+
+    CREATE EXTERNAL TABLE page_view_stg(
+                     viewTime INT,
+                     userid BIGINT,
+                     page_url STRING,
+                     referrer_url STRING,
+                     ip STRING COMMENT 'IP Address of the User',
+                     country STRING COMMENT 'country of origination')
+    COMMENT 'This is the staging page view table'
+    ROW FORMAT DELIMITED FIELDS TERMINATED BY '44'
+    LINES TERMINATED BY '12'
+    STORED AS TEXTFILE LOCATION '/user/data/staging/page_view';
+
+
+    b.修改表名
+    ALTER TABLE old_table_name RENAME TO new_table_name;
+
+    create table test_change(a int,b int,c int);
+    alter table test_change change a a1 int; //修改列名a 为a1,int类型
+    alter table test_change change a a1 string after b;//修改列名a1为a string 类型，放在列b之后
+    注意，修改列只能修改元数据不会修改实际数据
+
+
+
+    c. 删除表
+       DROP TABLE pv_users;
+    d. LOCATION 指定表的存储位置
+
+6. Hive Metastore Administration
+
+   Hive 默认用derby作为元数据库，创建的表信息会保存在你操作hive的目录中，cd到其他目录会看不到新建的表。
+
+   如果想用其他数据库作为数据元存储，可以在hive-site.xml中添加
+   例如：Mysql（5.6.17+）
+   property>
+       <name>javax.jdo.option.ConnectionURL</name>
+       <value>jdbc:mysql://10.128.2.2/hive?createDatabaseIfNotExist=true</value>
+       <description>mysql for a JDBC metastore</description>
+   </property>
+
+   在lib目录下添加mysql-connector-java-5.x.x.jar 连接驱动。
+
+   注意，当hive使用mysql作为元数据库的时候mysql的字符集要设置成latin1，否则会出错，
+   FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. MetaException(message:For direct MetaStore DB connections, we don't support retries at the client level.)
+   或者指定编码方式characterEncoding=UTF-8
+
+
+7. Hive是一个数据仓库
+   Hive is not designed for online transaction processing and does not offer real-time queries and row level updates.
+   It is best used for batch jobs over large sets of immutable data
+
+8. 要修改Hive的配置
+   需要在conf创建 conf/hive-site.xml文件,hive-default.xml.template中有各参数的默认配置，不能直接修改hive-default.xml，任何修改都会被
+   忽略，只能在hive-site.xml中修改
+
+
+10. Hive 数据模型
+    表(Table)  每张表对应一个存储目录
+    外部表(External table)
+    分区(Partition),将数据按照目录进行存放
+    桶(Bucket)

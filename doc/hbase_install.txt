@@ -15,7 +15,7 @@ hbase 版本为1.1.2
 Habse 集群安装方法。
 已三台机器为例，node-a.example.com ，master (zookeeper)
              node-b.example.com,  backup  (zookeeper,regionserver)
-              node-b.example.com,  (zookeeper,regionserver)
+             node-b.example.com,  (zookeeper,regionserver)
 
 1. 配置集群中的节点SSH 登录，
    $ ssh-keygen -t rsa

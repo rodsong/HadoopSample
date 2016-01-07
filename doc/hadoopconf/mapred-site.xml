@@ -11,6 +11,8 @@
    <property>
        <name>mapred.job.tracker</name>
        <value>rsong:9001</value>
+       <description>新框架中已改为 yarn-site.xml 中的 resouceManager 及 nodeManager 具体配置项，
+           新框架中历史 job 的查询已从 Job tracker 剥离，归入单独的 mapreduce.jobtracker.jobhistory 相关配置</description>
    </property>
 
     <property>
@@ -21,7 +23,7 @@
 
     <property>
         <name>mapred.map.output.compression.codec</name>
-        <value>org.apache.hadoop.io.compress.SnappyCodec</value>
-        <description>snappy 编码器</description>
+        <value>org.apache.hadoop.io.compress.BZip2Codec</value>
+        <description>BZip2Codec or snappy 编码器</description>
     </property>
 </configuration>

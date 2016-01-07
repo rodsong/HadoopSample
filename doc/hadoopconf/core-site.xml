@@ -11,4 +11,14 @@
        <value>/home/rsong/hdfs/tmp</value>
    </property>
 
+    <property>
+        <name>io.compression.codecs</name>
+        <value>
+            org.apache.hadoop.io.compress.GzipCodec,
+            org.apache.hadoop.io.compress.DefaultCodec,
+            org.apache.hadoop.io.compress.BZip2Codec,
+            org.apache.hadoop.io.compress.SnappyCodec
+        </value>
+    </property>
+
 </configuration>

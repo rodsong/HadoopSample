@@ -17,8 +17,8 @@ linux env
    protocol:hdfs read hadoop file.
 
    if run this demo on windows environment,you may encounter as following error.
-   Failed to locate the winutils binary in the hadoop binary path  java.io.IOException: Could not locate executable null\bin\winutils.exe in the Hadoop binaries.
-   .....
+   Failed to locate the winutils binary in the hadoop binary path
+   java.io.IOException: Could not locate executable null\bin\winutils.exe in the Hadoop binaries.
 
    you should be setup hadoop_home in windows env.
    1).download winutils on windows from github.com.
@@ -28,3 +28,5 @@ linux env
       HADOOP_HOME = D:\hadoop-common-2.2.0-bin
 
 4.FileSystemTest.java  HDFS Java API DEMO.
+
+5. 安装hadoop相关软件请参apache官方安装文档，因为yarn和MPv1已经有很多改动，网上的安装教程一般是过时的。
