@@ -97,6 +97,22 @@ Habse 集群安装方法。
 7. 可以把master和region server 的进程关掉查看 hbase 集群的工作情况。
 
 
+8.  Hbase master server 和 HRegionServer 群
+
+    Hbase master管理所以的HRegionServer,每个RegionServer 管理多个HRegion.
+    HRegion是HBase数据存储和管理的基本单位。
+
+9.  HRegion
+    一张完整的表格是保存在多个HRegion,一台机器上一般运行一个HRegion server, 一个region只会被一个HRegion server管理。
+    HRegion server主要包含两部分HLog 和 HRegion群
+
+    一个HRegion由多个store组成，一个HStore中有一个memstore，当memstore达到预设值后会保存到storefile（又称HFile）中。
+    StoreFile是HBase的最小存储单元。
+
+    HRegion是按照表名和主建范围来区分的。
+
+10. HRegion分裂
+
 
 
 

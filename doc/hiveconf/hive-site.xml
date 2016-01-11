@@ -34,4 +34,10 @@
     <value>root</value>
   </property>
 
+  <property>
+    <name>hive.server2.thrift.bind.host</name>
+    <value>10.128.2.150</value>
+    <description>Bind host on which to run the HiveServer2 Thrift service.</description>
+  </property>
+
 </configuration>
