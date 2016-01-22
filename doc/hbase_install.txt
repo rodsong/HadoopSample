@@ -115,5 +115,14 @@ Habse 集群安装方法。
 
 
 
+11. HBase设计原则
+
+    a. 列族的数量不应过多
+    b. 行键的设计
+    c. 优化行键和列族key的大小
+    d. 版本数量的控制，HColumnDescriptor
+
+
+
 
 

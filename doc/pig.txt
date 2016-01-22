@@ -1,0 +1,14 @@
+
+
+1. paswd demo error
+
+ Application state is completed. FinalApplicationStatus=SUCCEEDED. Redirecting to job history server
+
+ [main] WARN  org.apache.pig.tools.pigstats.mapreduce.MRJobStats - Failed to get map task report
+      java.io.IOException: java.net.ConnectException: Call From rsong/10.128.2.150 to 0.0.0.0:10020 failed on connection exception: java.net.ConnectException: Connection refused; For more details see:  http://wiki.apache.org/hadoop/ConnectionRefused
+
+ Hadoop启动jobhistoryserver来实现web查看作业的历史运行情况，由于在启动hdfs和Yarn进程之后，
+ jobhistoryserver进程并没有启动，需要手动启动，启动的方法是通过：
+ mr-jobhistory-daemon.sh start historyserver 命令启动,否则调用jos history server 失败。
+
+2.
